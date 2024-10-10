@@ -37,19 +37,27 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
+	//scheme的东西 一个对象 用来管理gvk和gostruct（crd) 一级一些互相转换的方法，
+	scheme = runtime.NewScheme()
+	//日志的前缀
 	setupLog = ctrl.Log.WithName("setup")
 )
 
 func init() {
+	//k8s 内置的GVK和gostruct(crd)的映射 也就是这个scheme需要的方法和映射 注入到scheme变量中
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
+	//operator中的GVK和gostruct(crd)的映射 也就是这个scheme需要的方法和映射 注入到scheme变量中
 	utilruntime.Must(demov1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
 func main() {
+	//处理命令行参数
+
+	//监控
 	var metricsAddr string
+	//有状态 多个副本 有竞争 同时提供服务 leader election 选举
 	var enableLeaderElection bool
 	var probeAddr string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
@@ -63,10 +71,14 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
+	//处理日志的参数
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	//完成处理完命令行参数
 
+	//创建manager
+	//manager 核心数据对象
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                 scheme,
+		Scheme:                 scheme, //前面创建的GVK和struct映射对象
 		MetricsBindAddress:     metricsAddr,
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
@@ -89,6 +101,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	//注册我们的controller 把controller添加到manager中
+	//Reconciler 存在于controller中 controller存在于manager下
 	if err = (&controllers.AppReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -98,6 +112,8 @@ func main() {
 	}
 	//+kubebuilder:scaffold:builder
 
+	//增加探活的path
+	//监测健康的方法
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")
 		os.Exit(1)
@@ -108,6 +124,8 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
+	//启动服务
+	//启动manger
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)

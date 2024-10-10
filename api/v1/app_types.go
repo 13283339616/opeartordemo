@@ -29,29 +29,41 @@ type AppSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of App. Edit app_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	//Foo string `json:"foo,omitempty"`
+
+	//Action to do some object 对对象做什么动作 例如给一个Hello
+	//+optional
+	Action string `json:"action,omitempty"`
+
+	//Object 对什么操作 optional可选 例如给一个world
+	//+optional
+	Object string `json:"object,omitempty"`
 }
 
 // AppStatus defines the observed state of App
 type AppStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+
+	//Result 显示action+object
+	//+optional
+	Result string `json:"result,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
+// App 定义我们CRD的对象
 // App is the Schema for the apps API
 type App struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`            //元信息
+	metav1.ObjectMeta `json:"metadata,omitempty"` //元信息
 
-	Spec   AppSpec   `json:"spec,omitempty"`
-	Status AppStatus `json:"status,omitempty"`
+	Spec   AppSpec   `json:"spec,omitempty"`   //CRD的核心内容 crd的描述定义
+	Status AppStatus `json:"status,omitempty"` //CRD的现阶段的状态的内容
 }
 
 //+kubebuilder:object:root=true
 
+// AppList 定义CRD的列表
 // AppList contains a list of App
 type AppList struct {
 	metav1.TypeMeta `json:",inline"`
@@ -60,5 +72,6 @@ type AppList struct {
 }
 
 func init() {
+	//注册gostruct 到scheme
 	SchemeBuilder.Register(&App{}, &AppList{})
 }

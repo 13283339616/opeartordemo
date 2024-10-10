@@ -9,4 +9,5 @@ metadata:
     app.kubernetes.io/created-by: demo
   name: app-sample
 spec:
-  # TODO(user): Add fields here
+  action: hello
+  object: world
